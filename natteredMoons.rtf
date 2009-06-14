@@ -1,0 +1,362 @@
+{\rtf1\ansi\ansicpg1252\cocoartf949\cocoasubrtf430
+{\fonttbl\f0\fnil\fcharset0 Futura-Medium;\f1\fnil\fcharset0 Geneva;\f2\fnil\fcharset0 Monaco;
+\f3\fnil\fcharset0 MarkerFelt-Thin;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue191;\red0\green0\blue0;\red96\green96\blue96;
+\red191\green0\blue0;\red0\green115\blue0;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\f0\fs36 \cf2 Computational\cf3  \cf2 Music\cf3  1\
+\cf2 Task\cf3  3 - \cf2 Project\cf3  \cf4 "Nattered Moons"\cf3 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+
+\f1\fs28 \cf3 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+
+\fs38 \cf5 //Boot the server
+\fs28 \cf3 \
+s.boot\
+
+\fs38 \cf5 //Load the SynthDef\cf3 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+
+\fs28 \cf3 (\
+\cf2 SynthDef\cf3 (\cf6 \\wedSynth\cf3 ,\{\cf2 arg\cf3  	midinote=60, \
+							octave=0, \
+							dronelvl=0.5, \
+							mDist = 1, \
+							rMix = 0.25, \
+							rRoom = 0.15, \
+							mButton, \
+							daBuff;\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\f2\fs18 \cf3 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+
+\f1\fs28 \cf2 var\cf3  vals, buf,  s, drone, noise, melody, pulse, root;\
+root = midinote+(12*octave);\
+f = root.midicps;							\cf5 //Root frequency\cf3 \
+g = (root+19).midicps;						\cf5 //Compound fifth above root frequency\cf3 \
+x = \cf2 MouseX\cf3 .kr(f, g, 1, 1);\
+y = \cf2 MouseY\cf3 .kr(0.25, 0.05, \cf6 'exponential'\cf3 );\
+z = \cf2 Index\cf3 .kr(daBuff, \cf2 MouseX\cf3 .kr(0, 20));\
+mButton = \cf2 MouseButton\cf3 .kr([x, x*2], [z, z*2] );\
+\
+\cf5 /////////Synths//////////////\cf3 \
+drone = \cf2 SinOsc\cf3 .ar([f, f/2], mul:1)*									\cf2 EnvGen\cf3 .kr(\cf2 Env\cf3 .new(\
+				 					\cf2 Array\cf3 .rand(16, 0, 0.2),  \cf5 //Random drones\cf3 \
+									\cf2 Array\cf3 .rand(15, 1, 5),\
+									\cf6 'exponential'\cf3 ,\
+									0,\
+									1));\
+\
+noise = \cf2 Ringz\cf3 .ar(\cf2 WhiteNoise\cf3 .ar(0.005),  \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf3             f*2,\
+            mul:\cf2 MouseY\cf3 .kr(0.15,0.25,\cf6 'exponential'\cf3 )\
+            );\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+\cf3      \
+melody = \cf2 Mix\cf3 .ar([\cf2 SinOsc\cf3 .ar(\cf2 KeyState\cf3 .kr(\
+									46,		\cf5 //m key\cf3 \
+									mButton,	\
+									
+\fs36 0
+\fs28 ),\
+					\cf2 SinOsc\cf3 .kr(y*50, 0, 1),  	\cf5 //Phase modulation controlled by mouse\cf3 \
+					mDist).wrap2(1)*y]);		\cf5 //Amplitude controlled by mouse\cf3 \
+								\
+pulse = \cf2 LFPulse\cf3 .ar(\cf2 KeyState\cf3 .kr(\
+									46,\
+									mButton,\
+									0.8),\
+					0,\
+					\cf2 LFTri\cf3 .kr(0.2, 0, 0.5, 0.5),\
+					y/4);\
+					\
+\cf5 /////////Output//////////////\cf3 \
+\cf2 Out\cf3 .ar(0, \
+	\cf2 Mix\cf3 .new([\
+			drone*dronelvl,\
+			\cf2 FreeVerb\cf3 .ar(drone*dronelvl,\
+						0.8,\
+						0.7),\
+			\cf2 FreeVerb\cf3 .ar(\cf2 Mix\cf3 .new([\
+								melody,\
+								\cf2 Latch\cf3 .ar(pulse, noise)\
+								]),\
+						rMix,\
+						rRoom\
+						),\
+			noise\
+			])\
+		);\
+\}).send(s)               \
+)\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+
+\fs38 \cf5 //Start the Synth
+\fs28 \cf3 \
+a = \cf2 Synth\cf3 (\cf6 \\wedSynth\cf3 );                                                          \
+\
+
+\fs40 \cf5 //Create the GUI
+\fs28 \cf3 \
+(\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+\cf2 var\cf3  window, width, height, droneSlid, dtext, mDistBut, mDistCS, mDistText, mReverbSlid, mReverbText, rootSlid, rootSlidCS, rootValueText, rootSlidText, rootOctUpBut, rootOctDownBut, numToMIDI, isOn=\cf2 false\cf3 , transposeFunction, currentTranspose= 0, rslidTemp, tones, buff, genArray, newBufferFunction, muteText, nameText, mouseText;\
+\
+\cf5 //Window\cf3 \
+width = \cf2 SCWindow\cf3 .screenBounds.width;\
+height = \cf2 SCWindow\cf3 .screenBounds.height; \
+window=\cf2 SCWindow\cf3 (\cf4 "Nattered Moons"\cf3 , \cf2 Rect\cf3 (0, 0, width, height),\cf2 false\cf3 ); \
+window.view.background = \cf2 Color\cf3 .new255(166, 108, 41);\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+
+\f2\fs26 \cf3 window.onClose = \{ if(isOn=\cf2 true\cf3 , \{a.free\})\};\
+isOn=\cf2 true\cf3 ;
+\f1\fs28 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+\cf5 //Title\cf3 \
+nameText = \cf2 SCStaticText\cf3 (window, \cf2 Rect\cf3 ( width/2.3, height*0.65, 500, 30));\
+nameText.string = \cf4 "Nattered Moons"\cf3 ;\
+nameText.font = \cf2 Font\cf3 (
+\f2\fs18 \cf4 "
+\f3\b\fs24 MarkerFelt-Thin
+\fs18 "\cf3 , 24);\
+\
+
+\f1\b0\fs28 \cf5 //Instructions\cf3 \
+muteText = \cf2 SCStaticText\cf3 (window, \cf2 Rect\cf3 ( width/2.35, height*0.72, 500, 30));\
+muteText.string = \cf4 "Press and hold 'm' to mute"\cf3 ;\
+muteText.font = \cf2 Font\cf3 (
+\f2\fs18 \cf4 "
+\f3\b\fs24 MarkerFelt-Thin
+\fs18 "\cf3 , 20);
+\f1\b0\fs28 \
+mouseText = \cf2 SCStaticText\cf3 (window, \cf2 Rect\cf3 ( width/2.6, height*0.77, 500, 30));\
+mouseText.string = \cf4 "Press and hold mouse button to auto-tune"\cf3 ;\
+mouseText.font = \cf2 Font\cf3 (
+\f2\fs18 \cf4 "
+\f3\b\fs24 MarkerFelt-Thin
+\fs18 "\cf3 , 20);
+\f1\b0\fs28 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+
+\f3\b\fs18 \cf3 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+
+\f1\b0\fs28 \cf3 \
+\cf5 //Buffer Allocation (for discreet pitches)\cf3 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf3 buff = \cf2 Buffer\cf3 .alloc(s, 20, 1, 0);\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+\cf3 \
+\cf5 //Functions\cf3 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf3 	\cf5 //Function to generate array of discreet pitches\cf3 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\fs26 \cf3 \
+genArray = \{\cf2 arg\cf3  val;\cf2 Array\cf3 .fill(20, \{\cf2 arg\cf3  i; (i+val).midicps\}); \};	
+\fs28 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+\cf3 	\cf5 //Convert MIDI number to note name\cf3 \
+numToMIDI = 
+\fs30 \{\cf2 arg\cf3  num;\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf2 var\cf3  noteName;\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\fs18 \cf3 	\
+	
+\fs30 d = case
+\fs18 \
+	
+\fs26 \{num==60\} \{ noteName = \cf4 "C"\cf3  \}
+\fs18 \
+	\{num==61\} \{ noteName = \cf4 "C#/Db"\cf3  \}\
+	\{num==62\} \{ noteName = \cf4 "D"\cf3  \}\
+	\{num==63\} \{ noteName = \cf4 "D#/Eb"\cf3  \}\
+	\{num==64\} \{ noteName = \cf4 "E"\cf3  \}\
+	\{num==65\} \{ noteName = \cf4 "F"\cf3  \}\
+	\{num==66\} \{ noteName = \cf4 "F#/Gb"\cf3  \}\
+	\{num==67\} \{ noteName = \cf4 "G"\cf3  \}\
+	\{num==68\} \{ noteName = \cf4 "G#/Ab"\cf3  \}\
+	\{num==69\} \{ noteName = \cf4 "A"\cf3  \}\
+	\{num==70\} \{ noteName = \cf4 "A#/Bb"\cf3  \}\
+	\{num==71\} \{ noteName = \cf4 "B"\cf3  \}\
+	
+\fs30 \}
+\fs26 ;\
+	\
+
+\fs18 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+
+\fs28 \cf3 	\cf5 //Function to generate fill buffer with new discreet pitch values
+\f2\fs18 \cf3 \
+
+\f1\fs28 newBufferFunction = \{\cf2 arg\cf3  val; 	tones = genArray.value(val);
+\f2\fs18 \
+								buff.setn(0, tones);\
+
+\f1\fs28 								a.set(\cf6 \\daBuff\cf3 , buff)\
+								\};\
+										\
+	\cf5 //Function for transposing up or down an octave\cf3 \
+transposeFunction= \{\cf2 arg\cf3  change; \
+		currentTranspose = currentTranspose + change; \
+		a.set(\cf6 \\octave\cf3 , currentTranspose);\
+		\};		\
+\
+\cf5 //Buttons\cf3 \
+21.do(\{\cf2 arg\cf3  i; \
+b = \cf2 GUI\cf3 .button.new(window, \cf2 Rect\cf3 ((i-1)*(width/20), 0, (width/20), (height*0.60))); \
+\
+\cf5 //b.mouseDownAction_(\{a.set(\\butFreq, f).postln\});\cf3 \
+c = case\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+
+\fs26 \cf3 	\{ i == 1 \}  \{ b.states = [[\cf4 "Root "\cf3 , \cf2 Color\cf3 .black, \cf2 Color\cf3 .white],[\cf4 "Root "\cf3 , \cf2 Color\cf3 .black, \cf2 Color\cf3 .white]];\}
+\fs20 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+
+\fs18 \cf3 	\{ i == 2 \}  \{ b.states = [[\cf4 "b2 "\cf3 , \cf2 Color\cf3 .white, \cf2 Color\cf3 .black],[\cf4 "b2 "\cf3 , \cf2 Color\cf3 .white, \cf2 Color\cf3 .black]];\}\
+	\{ i == 3 \}  \{ b.states = [[\cf4 "2 "\cf3 , \cf2 Color\cf3 .black, \cf2 Color\cf3 .white],[\cf4 "2 "\cf3 , \cf2 Color\cf3 .black, \cf2 Color\cf3 .white]];\}\
+	\{ i == 4 \}  \{ b.states = [[\cf4 "b3 "\cf3 , \cf2 Color\cf3 .white, \cf2 Color\cf3 .black],[\cf4 "b3 "\cf3 , \cf2 Color\cf3 .white, \cf2 Color\cf3 .black]];\}\
+	\{ i == 5 \}  \{ b.states = [[\cf4 "3 "\cf3 , \cf2 Color\cf3 .black, \cf2 Color\cf3 .white],[\cf4 "3 "\cf3 , \cf2 Color\cf3 .black, \cf2 Color\cf3 .white]];\}\
+	\{ i == 6 \}  \{ b.states = [[\cf4 "4 "\cf3 , \cf2 Color\cf3 .black, \cf2 Color\cf3 .white],[\cf4 "4 "\cf3 , \cf2 Color\cf3 .black, \cf2 Color\cf3 .white]];\}\
+	\{ i == 7 \}  \{ b.states = [[\cf4 "TT "\cf3 , \cf2 Color\cf3 .white, \cf2 Color\cf3 .black],[\cf4 "TT "\cf3 , \cf2 Color\cf3 .white, \cf2 Color\cf3 .black]];\}\
+	\{ i == 8 \}  \{ b.states = [[\cf4 "5 "\cf3 , \cf2 Color\cf3 .black, \cf2 Color\cf3 .white],[\cf4 "5 "\cf3 , \cf2 Color\cf3 .black, \cf2 Color\cf3 .white]];\}\
+	\{ i == 9 \}  \{ b.states = [[\cf4 "b6 "\cf3 , \cf2 Color\cf3 .white, \cf2 Color\cf3 .black],[\cf4 "b6 "\cf3 , \cf2 Color\cf3 .white, \cf2 Color\cf3 .black]];\}\
+	\{ i == 10 \}  \{ b.states = [[\cf4 "6 "\cf3 , \cf2 Color\cf3 .black, \cf2 Color\cf3 .white],[\cf4 "6 "\cf3 , \cf2 Color\cf3 .black, \cf2 Color\cf3 .white]];\}\
+	\{ i == 11 \}  \{ b.states = [[\cf4 "b7 "\cf3 , \cf2 Color\cf3 .white, \cf2 Color\cf3 .black],[\cf4 "b7 "\cf3 , \cf2 Color\cf3 .white, \cf2 Color\cf3 .black]];\}\
+	\{ i == 12 \}  \{ b.states = [[\cf4 "7 "\cf3 , \cf2 Color\cf3 .black, \cf2 Color\cf3 .white],[\cf4 "7 "\cf3 , \cf2 Color\cf3 .black, \cf2 Color\cf3 .white]];\}\
+	\{ i == 13 \}  \{ b.states = [[\cf4 "Root "\cf3 , \cf2 Color\cf3 .black, \cf2 Color\cf3 .white],[\cf4 "Root "\cf3 , \cf2 Color\cf3 .black, \cf2 Color\cf3 .white]];\}\
+	\{ i == 14 \}  \{ b.states = [[\cf4 "b2 "\cf3 , \cf2 Color\cf3 .white, \cf2 Color\cf3 .black],[\cf4 "b2 "\cf3 , \cf2 Color\cf3 .white, \cf2 Color\cf3 .black]];\}\
+	\{ i == 15 \}  \{ b.states = [[\cf4 "2 "\cf3 , \cf2 Color\cf3 .black, \cf2 Color\cf3 .white],[\cf4 "2 "\cf3 , \cf2 Color\cf3 .black, \cf2 Color\cf3 .white]];\}\
+	\{ i == 16 \}  \{ b.states = [[\cf4 "b3 "\cf3 , \cf2 Color\cf3 .white, \cf2 Color\cf3 .black],[\cf4 "b3 "\cf3 , \cf2 Color\cf3 .white, \cf2 Color\cf3 .black]];\}\
+	\{ i == 17 \}  \{ b.states = [[\cf4 "3 "\cf3 , \cf2 Color\cf3 .black, \cf2 Color\cf3 .white],[\cf4 "3 "\cf3 , \cf2 Color\cf3 .black, \cf2 Color\cf3 .white]];\}\
+	\{ i == 18 \}  \{ b.states = [[\cf4 "4 "\cf3 , \cf2 Color\cf3 .black, \cf2 Color\cf3 .white],[\cf4 "4 "\cf3 , \cf2 Color\cf3 .black, \cf2 Color\cf3 .white]];\}\
+	\{ i == 19 \}  \{ b.states = [[\cf4 "TT "\cf3 , \cf2 Color\cf3 .white, \cf2 Color\cf3 .black],[\cf4 "TT "\cf3 , \cf2 Color\cf3 .white, \cf2 Color\cf3 .black]];\}\
+	\{ i == 20 \}  \{ b.states = [[\cf4 "5 "\cf3 , \cf2 Color\cf3 .black, \cf2 Color\cf3 .white],[\cf4 "5 "\cf3 , \cf2 Color\cf3 .black, \cf2 Color\cf3 .white]];\}
+\fs28 \
+\
+\});\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+\cf5 //Sliders\cf3 \
+	\cf5 //Drone Volume Slider\cf3 \
+droneSlid=\cf2 SCSlider\cf3 (window, \cf2 Rect\cf3 ((width/33.6), (height/
+\fs18 1.6153846153846
+\fs28 ), (width/33.6), (height/5.25)));             \cf5 //Drone Volume\cf3 \
+	droneSlid.value_(0.5);\
+	droneSlid.action_(\{a.set(\cf6 \\dronelvl\cf3 , droneSlid.value);\});\
+dtext = \cf2 SCStaticText\cf3 (window, \cf2 Rect\cf3 ( (width/ 48), (height/ 1.2), (width/ 16.8), (height/21)));\
+	dtext.string = \cf4 "Drone Volume"\cf3 ;\
+	dtext.font = \cf2 Font\cf3 (
+\f2\fs18 \cf4 "
+\f3\b\fs24 MarkerFelt-Thin
+\fs18 "\cf3 , 14);\
+
+\f1\b0\fs28 \
+	\cf5 //Root Note Slider\cf3 \
+rootSlid=\cf2 SCSlider\cf3 (window, \cf2 Rect\cf3 ((width/ 13.44), (height/ 1.3), (width/ 8.4), (height/21)));             \
+	rootSlidCS= [60, 71, \cf6 'linear'\cf3 , 1, 1].asSpec;\
+	rslidTemp = rootSlidCS.map(rootSlid.value); 	\cf5 //So that transpose buttons can be changed without having moved the root slider\cf3 \
+	rootSlid.action_(\{\
+		rslidTemp = rootSlidCS.map(rootSlid.value); \
+		a.set(\cf6 \\midinote\cf3 , rslidTemp);\
+		rootValueText.string = numToMIDI.value(rslidTemp);\
+		newBufferFunction.value(rslidTemp+(12*currentTranspose))\
+		\});\
+rootSlidText = \cf2 SCStaticText\cf3 (window, \cf2 Rect\cf3 ( (width/ 8.4), (height/ 1.2), (width/ 16.8), (height/21)));    \cf5 //Root Note control\cf3 \
+	rootSlidText.string = \cf4 "Root Note"\cf3 ;\
+	rootSlidText.font = \cf2 Font\cf3 (
+\f2\fs18 \cf4 "
+\f3\b\fs24 MarkerFelt-Thin
+\fs18 "\cf3 , 14);
+\f1\b0\fs28 \
+	rootValueText = \cf2 SCStaticText\cf3 (window, \cf2 Rect\cf3 ((width/ 
+\fs18 7.8
+\fs28 ), (height/ 1.4), (width/ 16.8), (height/21)));\
+	rootValueText.string = \cf4 "C"\cf3 ;\
+	rootValueText.font = \cf2 Font\cf3 (
+\f2\fs18 \cf4 "
+\f3\b\fs24 MarkerFelt-Thin
+\fs18 "\cf3 , 14);\
+\
+	
+\f1\b0\fs28 \
+	\cf5 //Reverb Slider\cf3 \
+mReverbSlid=\cf2 SCSlider\cf3 (window, \cf2 Rect\cf3 ((width/ 
+\fs18 1.3
+\fs28 ), (height/
+\fs18 1.6)
+\fs28 , (width/ 33.6), (height/5.25)));             \cf5 //Melody Reverb Amount\cf3 \
+	mReverbSlid.action_(\{a.set(\cf6 \\rMix\cf3 , mReverbSlid.value/2, \cf6 \\rRoom\cf3 , mReverbSlid.value*1.25);\});\
+mReverbText = \cf2 SCStaticText\cf3 (window, \cf2 Rect\cf3 ( (width/
+\fs18 1.3)
+\fs28 , (height/ 
+\fs18 1.2
+\fs28 ), (width/16.8), (height/21)));\
+	mReverbText.string = \cf4 "Melody Reverb"\cf3 ;\
+	mReverbText.font = \cf2 Font\cf3 (
+\f2\fs18 \cf4 "
+\f3\b\fs24 MarkerFelt-Thin
+\fs18 "\cf3 , 14);\
+
+\f1\b0\fs28 									\
+\cf5 //Buttons\cf3 \
+	\cf5 //Octave up button	\cf3 \
+rootOctUpBut=\cf2 GUI\cf3 .button.new(window, \cf2 Rect\cf3 ( (width/ 6.7), (height/ 1.5), (width/ 33.6), (height/21)))\
+	.states_([\
+		[\cf4 "+"\cf3 , \cf2 Color\cf3 .white, \cf2 Color\cf3 .new255(70, 22, 17)]])                  \
+	.action_(\{	transposeFunction.value(1);\
+				newBufferFunction.value(rslidTemp+(12*currentTranspose))\
+				\}); \
+	\cf5 //Octave down button	\cf3 \
+rootOctDownBut=\cf2 GUI\cf3 .button.new(window, \cf2 Rect\cf3 ( (width/ 11.2), (height/ 1.5), (width/ 33.6), (height/21)))\
+	.states_([\
+		[\cf4 "-"\cf3 , \cf2 Color\cf3 .white, \cf2 Color\cf3 .new255(70, 22, 17)]])                   \
+	.action_(\{	transposeFunction.value(-1);  \
+				newBufferFunction.value(rslidTemp+(12*currentTranspose))\
+				\}); \
+\
+	\cf5 //Distortion Toggle button	\cf3 \
+mDistBut=\cf2 GUI\cf3 .button.new(window, \cf2 Rect\cf3 ((width/1.2), (height/
+\fs18 1.6)
+\fs28 , (width/
+\fs18 6.7
+\fs28 ), (height/5.25)))     \cf5 //Melody Distortion\cf3 \
+	.states_([\
+	[\cf4 "Clean"\cf3 , \cf2 Color\cf3 .white, \cf2 Color\cf3 .new255(70, 22, 17)],\
+	[\cf4 "Distorted"\cf3 , \cf2 Color\cf3 .white, \cf2 Color\cf3 .new255(70, 22, 17)]\
+	])\
+	.action_(\{ \cf2 arg\cf3  mDistBut;\
+		a.set(\cf6 \\mDist\cf3 , (0.5+mDistBut.value).postln)\
+		\});\
+mDistText = \cf2 SCStaticText\cf3 (window, \cf2 Rect\cf3 ( (width/1.1), (height/1.2), (width/16.8), (height/21)));	mDistText.string = \cf4 "Melody Distortion"\cf3 ;\
+	mDistText.font = \cf2 Font\cf3 (
+\f2\fs18 \cf4 "
+\f3\b\fs24 MarkerFelt-Thin
+\fs18 "\cf3 , 14);\
+\
+
+\f1\b0\fs28 \
+\cf5 //Window stuff\cf3 \
+window.front;\
+window.view.focus(\cf2 true\cf3 );\
+\
+\cf5 //Load buffer\cf3 \
+\{s.sync; 	\
+q = newBufferFunction.value(60);	\cf5 //Set original buffer so that discreet pitch control can be used.\cf3 \
+\}.fork\
+)\
+\
+\
+}
