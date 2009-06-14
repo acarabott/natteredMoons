@@ -1,0 +1,10 @@
+Nattered Moons
+
+A software instrument written in SuperCollider inspired by the Theremin and Ondes Martenot.
+
+Instructions:
+
+1. Boot the server
+2. Load the SynthDef
+3. Start the Synth
+4. Create the GUI
